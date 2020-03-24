@@ -2,15 +2,12 @@
   (:require [clojure.string :as str]
             [clojure.set :as set]))
 
-(defn eval-str [string]
-  (eval (read-string string)))
-
-(defn eval-str-with-ns [ns string]
+(defn eval-with-ns [ns forms]
   (if ns
     (do (when-not (find-ns ns) (require ns))
         (binding [*ns* (or (find-ns ns) *ns*)]
-          (eval-str string)))
-    (eval-str string)))
+          (eval forms)))
+    (eval forms)))
 
 (defn get-file-name-for-ns [n]
   (some-> n
