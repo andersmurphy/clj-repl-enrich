@@ -9,7 +9,14 @@
           (eval forms)))
     (eval forms)))
 
-(defn get-file-name-for-ns [n]
+(defn var-loc [sym]
+  (-> (meta sym)
+      (select-keys [:file :line :column])
+      seq
+      sort
+      ((partial map second))))
+
+(defn file-name-for-ns [n]
   (some-> n
           ns-publics
           first
@@ -17,13 +24,13 @@
           meta
           :file))
 
-(defn get-function-alias [n {:keys [name ns]}]
+(defn function-alias [n {:keys [name ns]}]
   (let [namespace->alias (set/map-invert (.getAliases n))
         alias            (namespace->alias ns)]
     {:full-name (if alias (str alias "/" name) (str name))
      :alias     alias}))
 
-(defn get-source-for-file [file]
+(defn source-for-file [file]
   (or (try {:source (slurp (str "src/" file))
             :path   (str "src/" file)}
            (catch Exception e))
@@ -48,11 +55,11 @@
          (filter #((set (vals (.getAliases %))) function-ns))
          (concat [function-ns])
          (map (fn [n]
-                (let [file (get-file-name-for-ns n)]
+                (let [file (file-name-for-ns n)]
                   (merge {:ns       n
                           :file     file
                           :new-name new-name}
-                         (get-source-for-file file)
-                         (get-function-alias n function)))))
+                         (source-for-file file)
+                         (function-alias n function)))))
          (map find-replace-in-source)
          (run! sync-source-to-file!))))
