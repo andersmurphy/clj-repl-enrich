@@ -1,6 +1,7 @@
 (ns repl-enrich.core
   (:require [clojure.string :as str]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [compliment.core :as compl]))
 
 (defn eval-with-ns [ns forms]
   (if ns
@@ -15,6 +16,9 @@
       seq
       sort
       ((partial map second))))
+
+(defn completions [prefix]
+  (compl/completions prefix {:plain-candidates true}))
 
 (defn file-name-for-ns [n]
   (some-> n
