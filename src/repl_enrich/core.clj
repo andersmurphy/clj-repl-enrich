@@ -1,6 +1,16 @@
-(ns clj-repl-enrichment.core
+(ns repl-enrich.core
   (:require [clojure.string :as str]
             [clojure.set :as set]))
+
+(defn eval-str [string]
+  (eval (read-string string)))
+
+(defn eval-str-with-ns [ns string]
+  (if ns
+    (do (when-not (find-ns ns) (require ns))
+        (binding [*ns* (or (find-ns ns) *ns*)]
+          (eval-str string)))
+    (eval-str string)))
 
 (defn get-file-name-for-ns [n]
   (some-> n
